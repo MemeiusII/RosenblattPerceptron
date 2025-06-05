@@ -55,11 +55,11 @@ int main(void) {
 	// Train loop
 	for(size_t iter = 0; iter < ITERATIONS; iter++) {
 		float cost = 0;
-		for(size_t j = 0; j < BATCH_SIZE; j++) {
-			float output = forward(inputs[j], weights, b);
-			float err = error(output, y[j]);
+		for(size_t BATCH = 0; BATCH < BATCH_SIZE; BATCH++) {
+			float output = forward(inputs[BATCH], weights, b);
+			float err = error(output, y[BATCH]);
 
-			adjustWeights(weights, inputs[j], err);
+			adjustWeights(weights, inputs[BATCH], err);
 			adjustBias(&b, err);
 
 			cost += err * err;
@@ -69,10 +69,10 @@ int main(void) {
 
 	// See output after training
 	printf("--- Final results after training ---\n");
-	for (size_t i = 0; i < BATCH_SIZE; i++) {
-		float output = forward(inputs[i], weights, b);
+	for (size_t BATCH = 0; BATCH < BATCH_SIZE; BATCH++) {
+		float output = forward(inputs[BATCH], weights, b);
 		printf("Input: [%g, %g] => Output: %f Expected Value: %f\n",
-		       inputs[i][0], inputs[i][1], output, y[i]);
+		       inputs[BATCH][0], inputs[BATCH][1], output, y[BATCH]);
 	}
 
 	return 0;
