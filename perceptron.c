@@ -1,27 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "logicgates.h"
 
-const float LEARNING_RATE = 0.05;
-const float ITERATIONS = 30;
+#define LEARNING_RATE 0.1
+#define ITERATIONS 50
 
-float randomFloat(float min, float max) {
-  return min + (float)rand() / RAND_MAX * (max - min);
+float randomFloat(const float min, const float max) {
+  return min + ((float)rand() / RAND_MAX * (max - min));
 }
 
-float activate(float z) {
+float activate(const float z) {
 	return z > 0 ? 1.0 : 0.0;
 }
 
-float forward(float x1, float x2,float w1, float w2) {
-	return activate(x1 * w1 + x2 * w2);
+float forward(const float* x, const float* w, const float b) {
+	float sum = 0;
+	for (size_t i = 0; i < INPUT_SIZE; i++) {
+		sum += x[i] * w[i];
+	}
+	return activate(sum + b);
 }
 
-float cost(float estimate, float truth) {
+float error(float estimate, float truth) {
 	return truth - estimate;
 }
 
-void adjustWeight(float* w, float x, float estimate, float truth) {
-	*w = *w + (LEARNING_RATE * (truth - estimate) * x);
+void adjustWeights(float* w, const float* x, float error) {
+	for (size_t i = 0; i < INPUT_SIZE; i++) {
+		w[i] += LEARNING_RATE * error * x[i];
+	}
+}
+
+void adjustBias(float* b, const float error) {
+	*b = *b + LEARNING_RATE * error;
 }
 
 int main(void) {
@@ -29,37 +40,39 @@ int main(void) {
 	  srand(1);
 
 	// Inputs
-	size_t input_size = 4;
-	float x1[] = { 1, 1, 0, 0 };
-	float x2[] = { 1, 0, 1, 0 };
-
+	float inputs[BATCH_SIZE][INPUT_SIZE] = GATE_INPUTS;
 	// Truth values
-	float y[] = { 1, 1, 1, 0 };
+	float y[BATCH_SIZE] = NAND_OUTPUT; // Swap for what yoyou want
 
 	// Weights
-	float w1 = randomFloat(-5.0, 5.0);
-	float w2 = randomFloat(-5.0, 5.0);
+	float weights[] = {
+		randomFloat(-5, 5), randomFloat(-5, 5)
+	};
+
+	// Bias
+	float b = 0;
 
 	// Train loop
-	for(size_t i = 0; i < ITERATIONS; i++) {
-		float c = 0;
-		// Forward for output
-		for(size_t j = 0; j < input_size; j++) {
-			float output = forward(x1[j], x2[j], w1 ,w2);
+	for(size_t iter = 0; iter < ITERATIONS; iter++) {
+		float cost = 0;
+		for(size_t j = 0; j < BATCH_SIZE; j++) {
+			float output = forward(inputs[j], weights, b);
+			float err = error(output, y[j]);
 
-			adjustWeight(&w1, x1[j], output, y[j]);
-			adjustWeight(&w2, x2[j], output, y[j]);
+			adjustWeights(weights, inputs[j], err);
+			adjustBias(&b, err);
 
-			c += cost(output, y[j]);
+			cost += err * err;
 		}
-		printf("w1: %f w2: %f \t", w1, w2);
-		printf("Iteration %zu cost: %f\n", (i + 1), c);
+		printf("Iteration %zu cost: %f\n", iter + 1, cost);
 	}
 
 	// See output after training
-	for(size_t i; i < input_size; i++) {
-		float output = forward(x1[i], x2[i], w1, w2);
-		printf("Ouput: %f Expected Value: %f\n", output, y[i]);
+	printf("--- Final results after training ---\n");
+	for (size_t i = 0; i < BATCH_SIZE; i++) {
+		float output = forward(inputs[i], weights, b);
+		printf("Input: [%g, %g] => Output: %f Expected Value: %f\n",
+		       inputs[i][0], inputs[i][1], output, y[i]);
 	}
 
 	return 0;
