@@ -78,11 +78,13 @@ gcc perceptron.c -o perceptron
 
 ## 🖥️ Sample Output
 
-w1: 1.050000 w2: 0.950000    Iteration 1 cost: 2.000000
+Iteration 1 cost: 2.0
+Iteration 2 cost: 1.0
 ...
-Output: 1.000000 Expected Value: 1.000000
-...
-Output: 0.000000 Expected Value: 0.000000
+Input: [1, 1] => Output: 1 Expected Value: 1
+Input: [1, 0] => Output: 1 Expected Value: 1
+Input: [0, 1] => Output: 1 Expected Value: 1
+Input: [0, 0] => Output: 0 Expected Value: 0
 
 ---
 
